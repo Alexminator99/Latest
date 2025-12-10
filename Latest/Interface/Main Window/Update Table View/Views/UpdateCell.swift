@@ -70,10 +70,11 @@ class UpdateCell: NSTableCellView {
 			if let app = self.app {
 				UpdateQueue.shared.addObserver(self, to: app.identifier) { [weak self] progress in
 					guard let self = self else { return }
-					self.supportStateImageView.isHidden = !self.showSupportState
+					// Update state indicator visibility when update progress changes
+					self.updateStateIndicator()
 				}
 			}
-		
+
 			self.updateButton.app = self.app
 			self.updateContents()
 		}
@@ -102,20 +103,47 @@ class UpdateCell: NSTableCellView {
 	
 	private func updateContents() {
 		guard let app = self.app, let versionInformation = app.localizedVersionInformation else { return }
-		
+
 		self.updateTitle()
-		
+
 		// Update the contents of the cell
         self.currentVersionTextField.stringValue = versionInformation.current
 		self.newVersionTextField.stringValue = versionInformation.new ?? ""
         self.newVersionTextField.isHidden = !app.updateAvailable
 		self.dateTextField.stringValue = dateFormatter.string(from: app.updateDate)
-		
-		// Support state
-		supportStateImageView.isHidden = !showSupportState
-		if showSupportState {
-			supportStateImageView.image = app.source.supportState.statusImage
-			supportStateImageView.toolTip = app.source.supportState.label
+
+		// Update state indicator
+		updateStateIndicator()
+	}
+
+	/// Updates the state indicator (ignored or support state).
+	private func updateStateIndicator() {
+		guard let app = self.app else {
+			supportStateImageView.isHidden = true
+			return
+		}
+
+		// State indicator: show ignored state or support state
+		if app.isIgnored {
+			// Show a distinct ignored indicator to differentiate from available updates
+			supportStateImageView.isHidden = false
+			if #available(macOS 11.0, *) {
+				supportStateImageView.image = NSImage(systemSymbolName: "bell.slash.fill", accessibilityDescription: NSLocalizedString("IgnoredAppAccessibilityLabel", comment: "Accessibility label for ignored app indicator"))
+				supportStateImageView.contentTintColor = .secondaryLabelColor
+			} else {
+				supportStateImageView.image = NSImage(named: NSImage.statusNoneName)
+			}
+			supportStateImageView.toolTip = NSLocalizedString("IgnoredAppTooltip", comment: "Tooltip for ignored app indicator")
+		} else {
+			// Support state
+			supportStateImageView.isHidden = !showSupportState
+			if showSupportState {
+				supportStateImageView.image = app.source.supportState.statusImage
+				if #available(macOS 11.0, *) {
+					supportStateImageView.contentTintColor = nil
+				}
+				supportStateImageView.toolTip = app.source.supportState.label
+			}
 		}
 	}
 	
