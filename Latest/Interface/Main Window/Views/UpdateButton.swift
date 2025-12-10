@@ -74,9 +74,34 @@ class UpdateButton: NSButton {
 	}
 	
 	/// The background color for this button. Animatable.
-	@objc dynamic var backgroundColor: NSColor = #colorLiteral(red: 0.9488552213, green: 0.9487094283, blue: 0.9693081975, alpha: 1) {
+	/// On macOS 26+, this uses a glass-like appearance via system colors.
+	@objc dynamic var backgroundColor: NSColor = {
+		if #available(macOS 26.0, *) {
+			return .quaternaryLabelColor
+		} else {
+			return #colorLiteral(red: 0.9488552213, green: 0.9487094283, blue: 0.9693081975, alpha: 1)
+		}
+	}() {
 		didSet {
 			self.needsDisplay = true
+		}
+	}
+
+	/// The highlight background color for the button.
+	var highlightBackgroundColor: NSColor {
+		if #available(macOS 26.0, *) {
+			return .tertiaryLabelColor
+		} else {
+			return #colorLiteral(red: 0.7995074391, green: 0.8113409281, blue: 0.8403512836, alpha: 1)
+		}
+	}
+
+	/// The default background color for the button.
+	var defaultBackgroundColor: NSColor {
+		if #available(macOS 26.0, *) {
+			return .quaternaryLabelColor
+		} else {
+			return #colorLiteral(red: 0.9488552213, green: 0.9487094283, blue: 0.9693081975, alpha: 1)
 		}
 	}
 

@@ -57,7 +57,10 @@ class MainWindowController: NSWindowController, NSMenuItemValidation, NSMenuDele
 		self.window?.titlebarAppearsTransparent = true
 		self.window?.title = Bundle.main.localizedInfoDictionary?[kCFBundleNameKey as String] as! String
 
-		if #available(macOS 11.0, *) {
+		if #available(macOS 26.0, *) {
+			// Use the new glass toolbar style for macOS Tahoe's liquid glass appearance
+			self.window?.toolbarStyle = .glass
+		} else if #available(macOS 11.0, *) {
 			self.window?.toolbarStyle = .unified
 		} else {
 			self.window?.titleVisibility = .hidden
