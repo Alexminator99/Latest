@@ -80,7 +80,14 @@ struct AppListSnapshot {
 			case .updateDate:
 				return app1.updateDate > app2.updateDate
 			case .name:
-				return app1.name.lowercased() < app2.name.lowercased()
+				// Use filesystem path as secondary sort criteria to ensure stable ordering
+				// when multiple apps have the same name
+				let name1 = app1.name.lowercased()
+				let name2 = app2.name.lowercased()
+				if name1 == name2 {
+					return app1.fileURL.path < app2.fileURL.path
+				}
+				return name1 < name2
 			}
 		})
 		
